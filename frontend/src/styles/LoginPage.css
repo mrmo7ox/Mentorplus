@@ -1,0 +1,118 @@
+/* --- Animation Keyframes --- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* --- Main Layout --- */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0F100D;
+  color: #F3F3F3;
+  font-family: sans-serif;
+}
+
+/* --- Card Styling --- */
+.login-card {
+  width: 100%;
+  max-width: 448px;
+  background-color: #1a1c18;
+  border-radius: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  padding: 1.5rem;
+}
+
+.animated-card {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* --- Card Content Styling --- */
+.login-title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  text-align: center;
+  color: #94EB4E;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* Adjust gap for the new structure */
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+/* --- THIS IS THE DEFINITIVE FIX --- */
+/* This class now controls the label/input pair */
+.form-control {
+  display: flex;
+  flex-direction: column; /* This stacks the label and input */
+}
+
+/* --- Styling for HeroUI/NextUI Input and Button Components --- */
+/* Target the label and input inside our new container */
+.form-control label {
+  color: #DFDFDC !important;
+  font-weight: 500;
+  margin-bottom: 0.5rem; /* Adds space between label and input */
+}
+
+.form-control input {
+  background-color: #171711 !important;
+  color: #F3F3F3 !important;
+  border: 1px solid #DFDFDC !important;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  transition: border-color 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-control input:focus {
+  border-color: #94EB4E !important;
+  outline: none;
+}
+
+/* Specific styling for the submit button */
+.submit-button {
+  background-color: #94EB4E !important;
+  color: #0F100D !important;
+  padding: 0.75rem;
+  font-weight: bold;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  transition: opacity 0.2s ease;
+  margin-top: 0.5rem; /* Add some space above the button */
+}
+
+.submit-button:hover {
+  opacity: 0.9;
+}
+
+/* --- Footer Styling --- */
+.login-footer {
+  text-align: center;
+  color: #DFDFDC;
+  padding-top: 1rem;
+}
+
+.forgot-password-link {
+  color: #94EB4E;
+  text-decoration: none;
+}
+
+.forgot-password-link:hover {
+  text-decoration: underline;
+}
