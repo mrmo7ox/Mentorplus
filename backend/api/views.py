@@ -4,6 +4,47 @@ from rest_framework import status
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.models import Group
 from rest_framework.authtoken.models import Token
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+
+
+
+
+class MeUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        user.email = request.data.get("email", user.email)
+        user.first_name = request.data.get("first_name", user.first_name)
+        user.last_name = request.data.get("last_name", user.last_name)
+
+        try:
+            user.save()
+        except Exception as e:
+            return Response({"detail": f"Error updating profile: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response({
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name
+        }, status=status.HTTP_200_OK)
+
+class MeAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        group = user.groups.first()
+
+        return Response({
+            "email": user.email,
+            "first": user.first_name,
+            "last": user.last_name,
+            "grp": group.id,
+        })
+
 User = get_user_model()
 
 class LoginAPIView(APIView):
