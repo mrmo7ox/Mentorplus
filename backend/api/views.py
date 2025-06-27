@@ -4,7 +4,6 @@ from rest_framework import status
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.models import Group
 from rest_framework.authtoken.models import Token
-
 User = get_user_model()
 
 class LoginAPIView(APIView):
@@ -45,6 +44,7 @@ class RegisterAPIView(APIView):
         user.save()
         return Response({"success": "OK"}, status=status.HTTP_201_CREATED)
     
+
 class AddcourseAPIView(APIView):
     def post(self, request):
         name = request.data.get("name")
