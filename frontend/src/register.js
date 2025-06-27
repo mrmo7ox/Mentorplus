@@ -1,17 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link , useNavigate } from 'react-router-dom';
 import ParticleBackground from './components/ParticleBackground';
 import { UserIcon, MailIcon, KeyIcon , EyeSlashFilledIcon ,EyeFilledIcon } from './components/icons';
-
+import { isTokenValid } from './utils/authutils';
 const fxDarkBg = '#0F0F0D';
 const fxAccentGreen = '#5DD62C';
 const fxLightText = '#F3F3F3';
 const fxMutedText = '#DFDFDC';
 const fxSecondaryBgTransparent = 'rgba(26, 26, 26, 0.7)';
-
-
-
-
 
 const RegisterPage = () => {
     const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', password: '', repeatPassword: '', role: 'student' });
@@ -22,6 +18,12 @@ const RegisterPage = () => {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [isRepeatPasswordVisible, setIsRepeatPasswordVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        isTokenValid().then(valid => {
+            if (valid) navigate('/dashboard');
+        });
+    }, [navigate]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -77,7 +79,6 @@ const RegisterPage = () => {
         }
     }; 
 
-
     return (
         <div className="min-h-screen font-sans antialiased relative" style={{ backgroundColor: fxDarkBg, color: fxLightText }}>
             <ParticleBackground />
@@ -110,7 +111,6 @@ const RegisterPage = () => {
                                 <button type="button" onClick={() => handleRoleChange('mentor')} className={`flex-1 py-2 text-center rounded-lg transition-colors duration-200 ${formData.role === 'mentor' ? 'bg-green-500 text-black' : 'hover:bg-gray-700/50'}`}>Mentor</button>
                             </div>
                         </div>
-
 
                         {[
                           {key: 'email', label: 'Email', icon: MailIcon, type: 'email'},

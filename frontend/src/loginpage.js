@@ -1,17 +1,15 @@
-import React, {  useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ParticleBackground from './components/ParticleBackground';
 import './styles/LoginPage.css';
 import { MailIcon, KeyIcon, EyeSlashFilledIcon, EyeFilledIcon } from './components/icons';
+import { isTokenValid } from './utils/authutils';
 
 const fxDarkBg = '#0F0F0D';
 const fxAccentGreen = '#5DD62C';
 const fxLightText = '#F3F3F3';
 const fxMutedText = '#DFDFDC';
 const fxSecondaryBgTransparent = 'rgba(26, 26, 26, 0.7)';
-
-
-
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
@@ -20,6 +18,13 @@ const LoginPage = () => {
     const [isVisible, setIsVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+    isTokenValid().then(valid => {
+        console.log('Token valid?', valid);
+        if (valid) navigate('/dashboard');
+    });
+    }, [navigate]);
 
     const validateEmail = (value) => {
         if (!value) { setError('L\'email est requis.'); return false; }
@@ -35,27 +40,24 @@ const LoginPage = () => {
         e.preventDefault();
         setError('');
         if (!validateEmail(email) || !validatePassword(password)) return;
-
         setIsLoading(true);
 
         try {
-            const xdata = new FormData();
-            xdata.append("email",email);
-            xdata.append("password",password);
-            const response = await fetch('http://127.0.0.1:8000/api/login/', {
+            const response = await fetch('http://127.0.0.1:8000/api/token/', {
                 method: 'POST',
-                body: xdata,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
             });
-
             const data = await response.json();
 
             if (!response.ok) {
-                setError(data.error || 'Échec de la connexion. Veuillez réessayer.');
+                setError(data.detail || 'Échec de la connexion. Veuillez réessayer.');
             } else {
-                localStorage.setItem("token", data.token);
+                localStorage.setItem("access", data.access);
+                localStorage.setItem("refresh", data.refresh);
+                console.log(data.access)
                 navigate("/dashboard");
             }
-
         } catch (error) {
             setError('Une erreur est survenue. Veuillez réessayer.');
         } finally {
