@@ -16,6 +16,20 @@ async function updateProfileApi(updatedData) {
     return await response.json();
 }
 
+async function updatepasswordApi(new_pass) {
+    const token = localStorage.getItem("access");
+    const response = await fetch("http://127.0.0.1:8000/api/password/update", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(new_pass)
+    });
+    if (!response.ok) throw new Error("Failed to update profile");
+    return await response.json();
+}
+
 const InfoField = ({ name, label, value, icon, type = "text", isEditing, onChange }) => {
     const Icon = icon;
     return (
@@ -190,7 +204,7 @@ const ProfileView = () => {
                         </div>
                     </div>
                     <div className="mt-6 flex justify-end">
-                        <button className="font-mono font-bold py-2 px-6 rounded-full text-base shadow-md transition-all duration-300 bg-green-500 text-black border border-green-500 hover:bg-green-600">Update Password</button>
+                        <button onClick={updatepasswordApi} className="font-mono font-bold py-2 px-6 rounded-full text-base shadow-md transition-all duration-300 bg-green-500 text-black border border-green-500 hover:bg-green-600">Update Password</button>
                     </div>
                 </div>
             </div>
