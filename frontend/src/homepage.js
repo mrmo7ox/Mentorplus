@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import ParticleBackground from './components/ParticleBackground';
 
 const fxDarkBg = '#0F0F0D';
 const fxSecondaryBg = '#1A1A1A';
@@ -14,99 +15,6 @@ const FxologyLogo = () => (
     </svg>
 );
 
-// --- Composant d'Arrière-plan à Particules ---
-const ParticleBackground = () => {
-    const canvasRef = useRef(null);
-
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        let particles = [];
-        const maxParticles = 80;
-        const lineColor = 'rgba(93, 214, 44, 0.1)';
-
-        const resizeCanvas = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        };
-
-        class Particle {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.size = Math.random() * 2 + 0.8;
-                this.speedX = Math.random() * 0.5 - 0.25;
-                this.speedY = Math.random() * 0.5 - 0.25;
-                this.opacity = Math.random() * 0.7 + 0.3;
-            }
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
-            }
-            draw() {
-                ctx.fillStyle = `rgba(223, 223, 220, ${this.opacity})`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        const init = () => {
-            particles = [];
-            for (let i = 0; i < maxParticles; i++) {
-                particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
-            }
-        };
-
-        const connectParticles = () => {
-            const maxDistance = 120;
-            for (let a = 0; a < particles.length; a++) {
-                for (let b = a; b < particles.length; b++) {
-                    const dx = particles[a].x - particles[b].x;
-                    const dy = particles[a].y - particles[b].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < maxDistance) {
-                        ctx.strokeStyle = lineColor;
-                        ctx.lineWidth = 0.8;
-                        ctx.beginPath();
-                        ctx.moveTo(particles[a].x, particles[a].y);
-                        ctx.lineTo(particles[b].x, particles[b].y);
-                        ctx.stroke();
-                    }
-                }
-            }
-        };
-        
-        let animationFrameId;
-        const animate = () => {
-            if (!canvas.getContext) return; 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            connectParticles();
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-            animationFrameId = requestAnimationFrame(animate);
-        };
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-        init();
-        animate();
-
-        return () => {
-            window.removeEventListener('resize', resizeCanvas);
-            cancelAnimationFrame(animationFrameId);
-        }
-    }, []);
-
-    return <canvas ref={canvasRef} className="absolute inset-0 z-0 h-full w-full"></canvas>;
-};
 
 const HomePage = () => {
     const infoCards = [
