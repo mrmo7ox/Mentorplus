@@ -54,3 +54,53 @@ export const PadlockIcon = (props) => {
     </svg>
   );
 };
+
+export const CoursesIcon = (props) => (
+    <svg aria-hidden="true" fill="currentColor" focusable="false" height="1em" role="presentation" viewBox="0 0 24 24" width="1em" {...props}>
+        <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 16v-2h-5v2h5zm-7-2H5v2h5v-2z"/>
+    </svg>
+);
+
+export const ApplicationsIcon = (props) => (
+    <svg aria-hidden="true" fill="currentColor" focusable="false" height="1em" role="presentation" viewBox="0 0 24 24" width="1em" {...props}>
+        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+    </svg>
+);
+
+export const CertificateIcon = (props) => (
+    <svg aria-hidden="true" fill="currentColor" focusable="false" height="1em" role="presentation" viewBox="0 0 24 24" width="1em" {...props}>
+        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+    </svg>
+);
+
+export const ProfileIcon = (props) => (
+    <svg aria-hidden="true" fill="currentColor" focusable="false" height="1em" role="presentation" viewBox="0 0 24 24" width="1em" {...props}>
+        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+    </svg>
+);
+
+export const DownloadIcon = (props) => (
+    <svg aria-hidden="true" fill="currentColor" focusable="false" height="1em" role="presentation" viewBox="0 0 24 24" width="1em" {...props}>
+        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+    </svg>
+);
+
+export const LogoutIcon = (props) => (
+    <svg aria-hidden="true" fill="currentColor" focusable="false" height="1em" role="presentation" viewBox="0 0 24 24" width="1em" {...props}>
+        <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"></path>
+    </svg>
+);
+
+export const DoubleChevronLeftIcon = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M18.75 19.5l-7.5-7.5 7.5-7.5m-6 15L5.25 12l7.5-7.5" />
+    </svg>
+);
+
+export const StudentsIcon = (props) => (
+    <svg aria-hidden="true" fill="currentColor" focusable="false" height="1em" role="presentation" viewBox="0 0 24 24" width="1em" {...props}>
+       <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+    </svg>
+);
+
+export const CalendarIcon = (props) => ( <svg aria-hidden="true" fill="currentColor" focusable="false" height="1em" role="presentation" viewBox="0 0 24 24" width="1em" {...props}> <path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/> </svg> );

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link , useNavigate } from 'react-router-dom';
 import ParticleBackground from './components/ParticleBackground';
 import { UserIcon, MailIcon, KeyIcon , EyeSlashFilledIcon ,EyeFilledIcon } from './components/icons';
 
@@ -12,9 +12,13 @@ const fxSecondaryBgTransparent = 'rgba(26, 26, 26, 0.7)';
 
 
 
+
 const RegisterPage = () => {
-    const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', password: '', repeatPassword: '' });
+    const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', password: '', repeatPassword: '', role: 'student' });
     const [errors, setErrors] = useState({});
+    const [serverError, setServerError] = useState('');
+    const navigate = useNavigate();
+
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [isRepeatPasswordVisible, setIsRepeatPasswordVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -22,6 +26,10 @@ const RegisterPage = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleRoleChange = (role) => {
+        setFormData(prev => ({ ...prev, role }));
     };
 
     const validate = () => {
@@ -39,13 +47,39 @@ const RegisterPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setServerError('');
         if (!validate()) return;
         setIsLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setIsLoading(false);
 
-        console.log("Form submitted successfully!", formData);
-    };
+        try {
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    first: formData.firstName,
+                    last: formData.lastName,
+                    email: formData.email,
+                    grp: formData.role === 'student' ? 1 : 2,
+                    password: formData.password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                navigate("/login");
+            } else {
+                setServerError(data.error || 'L\'inscription a échoué. Veuillez réessayer.');
+            }
+        } catch (error) {
+            setServerError('Une erreur est survenue. Veuillez vérifier votre connexion et réessayer.');
+        } finally {
+            setIsLoading(false);
+        }
+    }; 
+
 
     return (
         <div className="min-h-screen font-sans antialiased relative" style={{ backgroundColor: fxDarkBg, color: fxLightText }}>
@@ -60,6 +94,28 @@ const RegisterPage = () => {
                         {[
                           {key: 'firstName', label: 'Prénom', icon: UserIcon, type: 'text'},
                           {key: 'lastName', label: 'Nom de famille', icon: UserIcon, type: 'text'},
+                        ].map(field => (
+                             <div className="relative" key={field.key}>
+                                 <label className="absolute -top-3 left-3 px-1 text-lg z-10" style={{ backgroundColor: '#1A1A1A' }}>{field.label}</label>
+                                 <div className={`relative flex items-center bg-transparent border rounded-xl px-4 py-3 focus-within:border-green-500 hover:border-green-500 transition-colors`} style={{ borderColor: errors[field.key] ? '#EF4444' : '#4B5563' }}>
+                                     <field.icon className="text-2xl flex-shrink-0" style={{ color: fxMutedText }} />
+                                     <input name={field.key} type={field.type} placeholder={`Entrez votre ${field.label.toLowerCase()}`} className="w-full bg-transparent outline-none ml-3 text-lg" value={formData[field.key]} onChange={handleChange} />
+                                 </div>
+                                 {errors[field.key] && <p className="text-red-500 text-sm mt-1">{errors[field.key]}</p>}
+                             </div>
+                        ))}
+
+                        {/* Role Selector */}
+                        <div className="relative">
+                            <label className="absolute -top-3 left-3 px-1 text-lg z-10" style={{ backgroundColor: '#1A1A1A' }}>Rôle</label>
+                            <div className="flex bg-transparent border rounded-xl p-1 focus-within:border-green-500 hover:border-green-500 transition-colors" style={{ borderColor: '#4B5563' }}>
+                                <button type="button" onClick={() => handleRoleChange('student')} className={`flex-1 py-2 text-center rounded-lg transition-colors duration-200 ${formData.role === 'student' ? 'bg-green-500 text-black' : 'hover:bg-gray-700/50'}`}>Étudiant</button>
+                                <button type="button" onClick={() => handleRoleChange('mentor')} className={`flex-1 py-2 text-center rounded-lg transition-colors duration-200 ${formData.role === 'mentor' ? 'bg-green-500 text-black' : 'hover:bg-gray-700/50'}`}>Mentor</button>
+                            </div>
+                        </div>
+
+
+                        {[
                           {key: 'email', label: 'Email', icon: MailIcon, type: 'email'},
                           {key: 'password', label: 'Mot de passe', icon: KeyIcon, type: 'password'},
                           {key: 'repeatPassword', label: 'Répéter le mot de passe', icon: KeyIcon, type: 'password'},
