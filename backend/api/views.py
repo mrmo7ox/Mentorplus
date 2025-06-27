@@ -26,9 +26,10 @@ class RegisterAPIView(APIView):
         last_name = request.data.get("last_name")
         email = request.data.get("email")
         grp = request.data.get("grp")
-        if(grp > 2 or grp < 1):
+        if(int(grp) > 2 or int(grp) < 1):
             return Response({"error": "Invalid Group Id"}, status=status.HTTP_400_BAD_REQUEST)
         password = request.data.get("password")
+        print(first_name, last_name, email , grp, password)
         if not all([first_name, last_name, email, grp, password]):
             return Response({"success": "KO"}, status=status.HTTP_400_BAD_REQUEST)
         if User.objects.filter(email=email).exists():

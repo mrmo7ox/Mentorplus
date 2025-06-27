@@ -52,18 +52,15 @@ const RegisterPage = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('/api/register', {
+            const xdata = new FormData();
+            xdata.append("first_name", formData.firstName);
+            xdata.append("last_name", formData.lastName);
+            xdata.append("grp", formData.role === 'student' ? 1 : 2);
+            xdata.append("email", formData.email);
+            xdata.append("password", formData.password);
+            const response = await fetch('http://127.0.0.1:8000/api/register/', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    first: formData.firstName,
-                    last: formData.lastName,
-                    email: formData.email,
-                    grp: formData.role === 'student' ? 1 : 2,
-                    password: formData.password,
-                }),
+                body: xdata,
             });
 
             const data = await response.json();

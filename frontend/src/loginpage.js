@@ -39,12 +39,12 @@ const LoginPage = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('/api/login', {
+            const xdata = new FormData();
+            xdata.append("email",email);
+            xdata.append("password",password);
+            const response = await fetch('http://127.0.0.1:8000/api/login/', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email:email, password:password }),
+                body: xdata,
             });
 
             const data = await response.json();
