@@ -3,10 +3,26 @@ import React, { useState, useEffect } from "react";
 const fxSecondaryBg = '#1A1A1A';
 const fxMutedText = '#DFDFDC';
 
+// Dummy me function for demo. Replace with your real implementation.
+async function me() {
+    // Simulate API
+    return new Promise((resolve) => {
+        setTimeout(() => resolve({ cogires: 2, name: "Admin" }), 500);
+    });
+}
+
 const StudentCoursesView = () => {
     const [enrolledCourses, setEnrolledCourses] = useState([]);
     const [availableCourses, setAvailableCourses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [user, setUser] = useState(null);
+    const [userLoading, setUserLoading] = useState(true);
+
+    // Add Course Form State
+    const [categories, setCategories] = useState([]);
+    const [addCourseForm, setAddCourseForm] = useState({ name: "", category: "" });
+    const [addCourseError, setAddCourseError] = useState("");
+    const [addCourseSuccess, setAddCourseSuccess] = useState("");
 
     useEffect(() => {
         const fetchCourses = () => {
@@ -27,10 +43,119 @@ const StudentCoursesView = () => {
         fetchCourses();
     }, []);
 
-    if (isLoading) return <div>Loading Courses...</div>;
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const userObj = await me();
+                setUser(userObj);
+            } catch (e) {
+                setUser(null);
+            } finally {
+                setUserLoading(false);
+            }
+        };
+        fetchUser();
+    }, []);
+
+    // Fetch categories from API
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const token = localStorage.getItem("access");
+                const response = await fetch("http://localhost:8000/api/categories/", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+                if (!response.ok) throw new Error("Could not fetch categories");
+                const data = await response.json();
+                setCategories(data);
+            } catch (err) {
+                setCategories([]);
+            }
+        };
+        if (user && user.cogires === 2) {
+            fetchCategories();
+        }
+    }, [user]);
+
+    const handleAddCourseChange = (e) => {
+        const { name, value } = e.target;
+        setAddCourseForm(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleAddCourseSubmit = async (e) => {
+        e.preventDefault();
+        setAddCourseError("");
+        setAddCourseSuccess("");
+        if (!addCourseForm.name || !addCourseForm.category) {
+            setAddCourseError("Name and category are required.");
+            return;
+        }
+        try {
+            const token = localStorage.getItem("access");
+            const response = await fetch("http://localhost:8000/api/add-course/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    name: addCourseForm.name,
+                    category: addCourseForm.category,
+                }),
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                setAddCourseError(data.error || "Error adding course.");
+            } else {
+                setAddCourseSuccess("Course added successfully!");
+                setAddCourseForm({ name: "", category: "" });
+                // Optionally update course lists here
+            }
+        } catch (err) {
+            setAddCourseError("Network error.");
+        }
+    };
+
+    if (isLoading || userLoading) return <div>Loading...</div>;
 
     return (
         <div className="space-y-12">
+            {/* Add Course section */}
+            {user?.cogires === 2 && (
+                <div className="mb-10 p-6 rounded-xl border" style={{ backgroundColor: fxSecondaryBg, borderColor: '#2d2d2d' }}>
+                    <h2 className="text-2xl font-bold mb-4 text-white">Add a Course</h2>
+                    <form className="space-y-4" onSubmit={handleAddCourseSubmit}>
+                        <input
+                            className="w-full p-2 rounded"
+                            placeholder="Course Title"
+                            name="name"
+                            value={addCourseForm.name}
+                            onChange={handleAddCourseChange}
+                        />
+                        <select
+                            className="w-full p-2 rounded "
+                            name="category"
+                            value={addCourseForm.category}
+                            onChange={handleAddCourseChange}
+                        >
+                            <option className="bg-[#242424] " value="">Select Category</option>
+                            {categories.map(cat => (
+                                <option className="bg-[#242424] focus:bg-[#242424]  hover:bg-[#242424] " key={cat.id} value={cat.id}>{cat.name}</option>
+                            ))}
+                        </select>
+                        {addCourseError && <div className="text-red-500">{addCourseError}</div>}
+                        {addCourseSuccess && <div className="text-green-500">{addCourseSuccess}</div>}
+                        <button type="submit" className="bg-green-500 text-black px-4 py-2 rounded-full hover:bg-green-600 font-semibold">
+                            Add Course
+                        </button>
+                    </form>
+                </div>
+            )}
+
             <div>
                 <h2 className="text-3xl font-bold mb-8">My Courses</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">

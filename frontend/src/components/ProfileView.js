@@ -30,6 +30,19 @@ async function updatepasswordApi(new_pass) {
     return await response.json();
 }
 
+async function fetchCategories() {
+    const token = localStorage.getItem("access");
+    const response = await fetch("http://127.0.0.1:8000/api/categories/", {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        }
+    });
+    if (!response.ok) throw new Error("Failed to fetch categories");
+    return await response.json();
+}
+
 const InfoField = ({ name, label, value, icon, type = "text", isEditing, onChange }) => {
     const Icon = icon;
     return (
@@ -57,6 +70,7 @@ const ProfileView = () => {
         lastName: "",
         email: ""
     });
+    const [categories, setCategories] = useState([]);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -77,6 +91,19 @@ const ProfileView = () => {
 
     useEffect(() => {
         fetchUser();
+    }, []);
+
+    // Fetch categories when component mounts
+    useEffect(() => {
+        const getCategories = async () => {
+            try {
+                const cats = await fetchCategories();
+                setCategories(cats);
+            } catch (e) {
+                setCategories([]);
+            }
+        };
+        getCategories();
     }, []);
 
     const handleInputChange = (e) => {
@@ -148,6 +175,18 @@ const ProfileView = () => {
                             isEditing={isEditing}
                             onChange={handleInputChange}
                         />
+                    </div>
+                    {/* Example of showing categories */}
+                    <div className="mt-8">
+                        <label className="text-lg font-semibold mb-2 block" style={{ color: "#DFDFDC" }}>
+                            Categories from API:
+                        </label>
+                        <ul className="list-disc ml-8">
+                            {categories.length === 0 && <li className="text-gray-400">No categories found.</li>}
+                            {categories.map((cat) => (
+                                <li key={cat.id} className="text-white">{cat.name}</li>
+                            ))}
+                        </ul>
                     </div>
                     {saveError && <div className="text-red-500 mt-4">{saveError}</div>}
                     <div className="mt-6 flex justify-end gap-4">

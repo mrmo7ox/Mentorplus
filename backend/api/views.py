@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
-
+from .models import Courses , Category
 
 class MeUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -108,7 +108,39 @@ class RegisterAPIView(APIView):
     
 
 class AddcourseAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         name = request.data.get("name")
-        image = request.data.files("image")[0]
-        category = request.data.get("category")
+        category_id = request.data.get("category")
+        if request.user.groups.first().id != 2:
+            return Response({"error": "You are not authorized to add a course."}, status=status.HTTP_403_FORBIDDEN)
+
+        if not name or not category_id:
+            return Response({"error": "Name and category are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            category = Category.objects.get(id=category_id)
+        except Category.DoesNotExist:
+            return Response({"error": "Category not found."}, status=status.HTTP_400_BAD_REQUEST)
+
+        course = Courses.objects.create(
+            name=name,
+            category=category,
+        )
+        course_data = {
+            "id": course.id,
+            "name": course.name,
+            "category": {
+                "id": category.id,
+                "name": category.name
+            }
+        }
+        return Response(course_data, status=status.HTTP_201_CREATED)
+    
+
+class CategoryListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        categories = Category.objects.all()
+        data = [{"id": cat.id, "name": cat.name} for cat in categories]
+        return Response(data)

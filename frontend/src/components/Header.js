@@ -54,7 +54,7 @@ function Header({ pageTitle, userRole }) {
                                     style: { color: fxAccentGreen },
                                     key: 'userRole'
                                 },
-                                userRole
+                                `${data.grp === 1 ? 'Studient': 'Mentor'}`
                             )
                         ]
                     ),
