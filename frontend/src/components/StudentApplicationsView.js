@@ -8,12 +8,22 @@ const StudentApplicationsView = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchApplications = () => {
-            const data = [{ title: 'Dynamique du Marché Forex', status: 'Pending', date: '2024-06-15' }];
-            setTimeout(() => {
+        const fetchApplications = async () => {
+            setIsLoading(true);
+            try {
+                const token = localStorage.getItem("access");
+                const response = await fetch("http://localhost:8000/api/student/applications/", {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+                if (!response.ok) throw new Error("Failed to fetch applications");
+                const data = await response.json();
                 setApplications(data);
-                setIsLoading(false);
-            }, 1000);
+            } catch (err) {
+                setApplications([]);
+            }
+            setIsLoading(false);
         };
         fetchApplications();
     }, []);

@@ -236,3 +236,17 @@ class CategoryListAPIView(APIView):
         categories = Category.objects.all()
         data = [{"id": cat.id, "name": cat.name} for cat in categories]
         return Response(data)
+
+class StudentApplicationsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        applications = Application.objects.filter(user=request.user).select_related('course')
+        data = []
+        for app in applications:
+            data.append({
+                "id": app.id,
+                "title": app.course.name,
+                "status": app.status,
+                "date": app.created_at.strftime('%Y-%m-%d'),
+            })
+        return Response(data)

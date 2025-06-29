@@ -21,5 +21,6 @@ urlpatterns = [
     # rest password
     path('password/update/', PassUpdateAPIView.as_view(), name='password-update'),
     path('password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
+    path('student/applications/', StudentApplicationsAPIView.as_view(), name='student-applications'),
 
 ]
