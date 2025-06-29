@@ -33,24 +33,25 @@ class MeUpdateAPIView(APIView):
 
 class PassUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
+
     def post(self, request):
         user = request.user
-        pass1 = request.data.get("passowrd1", user.email)
-        pass2 = request.data.get("passowrd2", user.first_name)
-        if not pass1 or not pass2:
-            return Response({"error": "Both password fields are required."}, status=status.HTTP_400_BAD_REQUEST)
+        old_pass = request.data.get("old_password")
+        new_pass = request.data.get("new_password")
 
-        if pass1 != pass2:
-            return Response({"error": "Passwords do not match."}, status=status.HTTP_400_BAD_REQUEST)
+        if not old_pass or not new_pass:
+            return Response({"error": "Both old and new password fields are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        user.set_password(pass1)
+        if not user.check_password(old_pass):
+            return Response({"error": "Current password is incorrect."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_pass)
         try:
             user.save()
         except Exception as e:
-            return Response({"detail": f"Error updating profile: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": f"Error updating password: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
         
         return Response({"detail": "Password updated successfully."}, status=status.HTTP_200_OK)
-
 
 class MeAPIView(APIView):
     permission_classes = [IsAuthenticated]

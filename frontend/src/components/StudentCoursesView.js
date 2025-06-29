@@ -1,15 +1,8 @@
 import React, { useState, useEffect } from "react";
-
+import {me} from '../utils/authutils'
 const fxSecondaryBg = '#1A1A1A';
 const fxMutedText = '#DFDFDC';
 
-// Dummy me function for demo. Replace with your real implementation.
-async function me() {
-    // Simulate API
-    return new Promise((resolve) => {
-        setTimeout(() => resolve({ cogires: 2, name: "Admin" }), 500);
-    });
-}
 
 const StudentCoursesView = () => {
     const [enrolledCourses, setEnrolledCourses] = useState([]);
@@ -57,7 +50,6 @@ const StudentCoursesView = () => {
         fetchUser();
     }, []);
 
-    // Fetch categories from API
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -76,7 +68,7 @@ const StudentCoursesView = () => {
                 setCategories([]);
             }
         };
-        if (user && user.cogires === 2) {
+        if (user) {
             fetchCategories();
         }
     }, [user]);
@@ -113,7 +105,6 @@ const StudentCoursesView = () => {
             } else {
                 setAddCourseSuccess("Course added successfully!");
                 setAddCourseForm({ name: "", category: "" });
-                // Optionally update course lists here
             }
         } catch (err) {
             setAddCourseError("Network error.");
@@ -124,8 +115,7 @@ const StudentCoursesView = () => {
 
     return (
         <div className="space-y-12">
-            {/* Add Course section */}
-            {user?.cogires === 2 && (
+            {user?.grp === 2 && (
                 <div className="mb-10 p-6 rounded-xl border" style={{ backgroundColor: fxSecondaryBg, borderColor: '#2d2d2d' }}>
                     <h2 className="text-2xl font-bold mb-4 text-white">Add a Course</h2>
                     <form className="space-y-4" onSubmit={handleAddCourseSubmit}>

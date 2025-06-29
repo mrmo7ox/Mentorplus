@@ -16,17 +16,17 @@ async function updateProfileApi(updatedData) {
     return await response.json();
 }
 
-async function updatepasswordApi(new_pass) {
+async function updatepasswordApi(data) {
     const token = localStorage.getItem("access");
-    const response = await fetch("http://127.0.0.1:8000/api/password/update", {
+    const response = await fetch("http://127.0.0.1:8000/api/password/update/", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify(new_pass)
+        body: JSON.stringify(data)
     });
-    if (!response.ok) throw new Error("Failed to update profile");
+    if (!response.ok) throw new Error("Failed to update password");
     return await response.json();
 }
 
@@ -76,6 +76,13 @@ const ProfileView = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState(null);
 
+    // Password state
+    const [oldPassword, setOldPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [isPasswordLoading, setIsPasswordLoading] = useState(false);
+    const [passwordError, setPasswordError] = useState(null);
+    const [passwordSuccess, setPasswordSuccess] = useState(null);
+
     const fetchUser = async () => {
         setIsLoading(true);
         const data = await me();
@@ -93,7 +100,6 @@ const ProfileView = () => {
         fetchUser();
     }, []);
 
-    // Fetch categories when component mounts
     useEffect(() => {
         const getCategories = async () => {
             try {
@@ -127,6 +133,31 @@ const ProfileView = () => {
             setSaveError("Error updating profile. Please try again.");
         }
         setIsSaving(false);
+    };
+
+    // Handle password update
+    const handlePasswordUpdate = async (e) => {
+        e.preventDefault();
+        setPasswordError(null);
+        setPasswordSuccess(null);
+        setIsPasswordLoading(true);
+        if (!oldPassword || !newPassword) {
+            setPasswordError("Both current and new password fields are required.");
+            setIsPasswordLoading(false);
+            return;
+        }
+        try {
+            await updatepasswordApi({
+                old_password: oldPassword,
+                new_password: newPassword
+            });
+            setPasswordSuccess("Password updated successfully!");
+            setOldPassword("");
+            setNewPassword("");
+        } catch (err) {
+            setPasswordError("Error updating password. Please check your current password.");
+        }
+        setIsPasswordLoading(false);
     };
 
     if (isLoading) return <div>Loading profile...</div>;
@@ -219,8 +250,8 @@ const ProfileView = () => {
                         )}
                     </div>
                 </form>
-                {/* Password Section (unchanged) */}
-                <div>
+                {/* Password Section */}
+                <form onSubmit={handlePasswordUpdate}>
                     <div className="border-t border-gray-700 my-6"></div>
                     <h3 className="text-xl font-semibold mb-6">Change Password</h3>
                     <div className="space-y-6">
@@ -228,24 +259,46 @@ const ProfileView = () => {
                             <label className="absolute -top-3 left-3 px-1 text-sm z-10" style={{ backgroundColor: "#1A1A1A" }}>Current Password</label>
                             <div className="relative flex items-center bg-transparent border rounded-xl px-4 py-3" style={{ borderColor: "#4B5563" }}>
                                 <KeyIcon className="text-2xl" style={{ color: "#DFDFDC" }} />
-                                <input type={isPasswordVisible ? 'text' : 'password'} className="w-full bg-transparent outline-none ml-3 text-lg" />
+                                <input
+                                    type={isPasswordVisible ? 'text' : 'password'}
+                                    className="w-full bg-transparent outline-none ml-3 text-lg"
+                                    value={oldPassword}
+                                    onChange={e => setOldPassword(e.target.value)}
+                                    autoComplete="current-password"
+                                    placeholder="Current password"
+                                />
+                                <button type="button" className="focus:outline-none ml-2" onClick={() => setIsPasswordVisible(p => !p)}>
+                                    {isPasswordVisible ? <EyeSlashFilledIcon className="text-2xl" style={{ color: "#DFDFDC" }} /> : <EyeFilledIcon className="text-2xl" style={{ color: "#DFDFDC" }} />}
+                                </button>
                             </div>
                         </div>
                         <div className="relative">
                             <label className="absolute -top-3 left-3 px-1 text-sm z-10" style={{ backgroundColor: "#1A1A1A" }}>New Password</label>
                             <div className="relative flex items-center bg-transparent border rounded-xl px-4 py-3" style={{ borderColor: "#4B5563" }}>
                                 <KeyIcon className="text-2xl" style={{ color: "#DFDFDC" }} />
-                                <input type={isPasswordVisible ? 'text' : 'password'} className="w-full bg-transparent outline-none ml-3 text-lg" />
-                                <button type="button" className="focus:outline-none ml-2" onClick={() => setIsPasswordVisible(p => !p)}>
-                                    {isPasswordVisible ? <EyeSlashFilledIcon className="text-2xl" style={{ color: "#DFDFDC" }} /> : <EyeFilledIcon className="text-2xl" style={{ color: "#DFDFDC" }} />}
-                                </button>
+                                <input
+                                    type={isPasswordVisible ? 'text' : 'password'}
+                                    className="w-full bg-transparent outline-none ml-3 text-lg"
+                                    value={newPassword}
+                                    onChange={e => setNewPassword(e.target.value)}
+                                    autoComplete="new-password"
+                                    placeholder="New password"
+                                />
                             </div>
                         </div>
                     </div>
+                    {passwordError && <div className="text-red-500 mt-4">{passwordError}</div>}
+                    {passwordSuccess && <div className="text-green-500 mt-4">{passwordSuccess}</div>}
                     <div className="mt-6 flex justify-end">
-                        <button onClick={updatepasswordApi} className="font-mono font-bold py-2 px-6 rounded-full text-base shadow-md transition-all duration-300 bg-green-500 text-black border border-green-500 hover:bg-green-600">Update Password</button>
+                        <button
+                            type="submit"
+                            className="font-mono font-bold py-2 px-6 rounded-full text-base shadow-md transition-all duration-300 bg-green-500 text-black border border-green-500 hover:bg-green-600"
+                            disabled={isPasswordLoading}
+                        >
+                            {isPasswordLoading ? "..." : "Update Password"}
+                        </button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     );
