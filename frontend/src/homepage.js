@@ -121,7 +121,7 @@ const HomePage = () => {
                 </section>
             </main>
             <footer className="py-8 px-6 md:px-12 text-center border-t z-0" style={{ backgroundColor: fxDarkBg, color: 'gray', borderColor: fxSecondaryBg }}>
-                <p className="text-sm">&copy; {new Date().getFullYear()} Fxology. Tous droits réservés.</p>
+                <p className="text-sm">&copy; {new Date().getFullYear()} MentorPlus. Tous droits réservés.</p>
             </footer>
         </div>
     );
