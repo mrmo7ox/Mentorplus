@@ -15,6 +15,7 @@ urlpatterns = [
     path('me/', MeAPIView.as_view(), name='me'),
     path('me/update', MeUpdateAPIView.as_view(), name='me-update'),
     path('getcourses', GetCoursesAPIView.as_view(), name='getcourses'),
+    path('studient/courses', SubCoursesAPIView.as_view(), name='me-update'),
     path('me/mentor/Courses', GetMentorCoursesAPIView.as_view(), name='me-update'),
     # path('me/studient/Courses', GetstudientCoursesAPIView.as_view(), name='me-update'),
     # rest password

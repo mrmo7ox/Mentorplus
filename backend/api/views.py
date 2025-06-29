@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
-from .models import Courses , Category
+from .models import *
 
 class MeUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -148,6 +148,45 @@ class GetMentorCoursesAPIView(APIView):
     def get(self, request):
         mentor_courses = Courses.objects.filter(creator=request.user)
         return Response(mentor_courses, status=200)
+    
+class SubCoursesAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        applications = Application.objects.filter(user=request.user)
+        if not applications.exists():
+            return Response({"error": "No courses found"}, status=status.HTTP_404_NOT_FOUND)
+
+        courses_data = []
+        for application in applications:
+            course = application.course
+            courses_data.append({
+                "id": course.id,
+                "name": course.name,
+                "duration": course.duration,
+                "description": course.description,
+                "category": {
+                    "id": course.category.id,
+                    "name": course.category.name
+                } if course.category else None,
+            })
+        return Response(courses_data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        user = request.user
+        course_id = request.data.get("course")
+        if not user or not course_id:
+            return Response({"error": "Bad data."}, status=status.HTTP_400_BAD_REQUEST)
+        db_course = Courses.objects.filter(id=course_id).first()
+        if not db_course:
+            return Response({"error": "Bad data."}, status=status.HTTP_400_BAD_REQUEST)
+        if Application.objects.filter(user=user, course=db_course).exists():
+            return Response({"error": "Already applied."}, status=status.HTTP_400_BAD_REQUEST)
+        new_app = Application.objects.create(
+            user=user,
+            course=db_course
+        )
+        return Response({"success": "OK"}, status=status.HTTP_201_CREATED)
     
 class GetCoursesAPIView(APIView):
     permission_classes = [IsAuthenticated]

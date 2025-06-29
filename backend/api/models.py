@@ -48,3 +48,12 @@ class Courses(models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="created_courses")
     def __str__(self):
         return self.name
+
+class Application(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='applications')
+    course = models.ForeignKey('Courses', on_delete=models.CASCADE, related_name='applications')
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=32, default='pending')
+    
+    def str(self):
+        return f"{self.user.email} -> {self.course.name} ({self.status})"
