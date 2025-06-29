@@ -352,3 +352,22 @@ class CancelApplicationAPIView(APIView):
             return Response({'error': 'Pending application not found or not authorized.'}, status=status.HTTP_404_NOT_FOUND)
         application.delete()
         return Response({'success': 'Application cancelled.'}, status=status.HTTP_200_OK)
+
+class MentorStudentsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Get all accepted applications for courses created by this mentor
+        mentor_courses = Courses.objects.filter(creator=request.user)
+        applications = Application.objects.filter(course__in=mentor_courses, status="accepted").select_related('course', 'user')
+        data = []
+        for app in applications:
+            data.append({
+                "student_id": app.user.id,
+                "student_first_name": app.user.first_name,
+                "student_last_name": app.user.last_name,
+                "student_email": app.user.email,
+                "course_id": app.course.id,
+                "course_name": app.course.name,
+            })
+        return Response(data)

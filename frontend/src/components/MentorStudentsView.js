@@ -8,16 +8,22 @@ const MentorStudentsView = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchStudents = () => {
-            const data = [
-                { name: 'Charlie Brown', course: 'Intro to Algotrading' },
-                { name: 'Lucy van Pelt', course: 'Intro to Algotrading' },
-                { name: 'Linus van Pelt', course: 'Advanced Quant Analysis' },
-            ];
-            setTimeout(() => {
+        const fetchStudents = async () => {
+            setIsLoading(true);
+            try {
+                const token = localStorage.getItem("access");
+                const response = await fetch("http://localhost:8000/api/mentor/students/", {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+                if (!response.ok) throw new Error("Failed to fetch students");
+                const data = await response.json();
                 setStudents(data);
-                setIsLoading(false);
-            }, 1000);
+            } catch (err) {
+                setStudents([]);
+            }
+            setIsLoading(false);
         };
         fetchStudents();
     }, []);
@@ -31,8 +37,10 @@ const MentorStudentsView = () => {
                 {students.map((student, index) => (
                     <div key={index} className="flex flex-col sm:flex-row justify-between items-center rounded-xl p-6 border" style={{ backgroundColor: fxSecondaryBg, borderColor: '#2d2d2d' }}>
                         <div className='flex-1'>
-                            <h3 className="font-bold text-xl text-white">{student.name}</h3>
-                            <p className="text-sm" style={{ color: fxMutedText }}>{student.course}</p>
+                            <h3 className="font-bold text-xl text-white">{student.student_first_name} {student.student_last_name}</h3>
+                            <p className="text-xs" style={{ color: fxMutedText }}>{student.student_email}</p>
+
+                            <p className="text-sm" style={{ color: fxMutedText }}>{student.course_name}</p>
                         </div>
                         <div className="flex items-center gap-4 mt-4 sm:mt-0">
                             <button className="font-mono text-sm font-semibold py-2 px-4 rounded-full transition-colors bg-gray-700/50 text-white hover:bg-blue-500 hover:text-black">Evaluate</button>

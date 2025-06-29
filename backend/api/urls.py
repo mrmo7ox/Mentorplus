@@ -27,5 +27,6 @@ urlpatterns = [
     path('mentor/edit-course/', EditCourseAPIView.as_view(), name='edit-course'),
     path('mentor/delete-course/', DeleteCourseAPIView.as_view(), name='delete-course'),
     path('student/cancel-application/', CancelApplicationAPIView.as_view(), name='student-cancel-application'),
+    path('mentor/students/', MentorStudentsAPIView.as_view(), name='mentor-students'),
 
 ]
