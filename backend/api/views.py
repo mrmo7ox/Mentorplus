@@ -174,7 +174,7 @@ class SubCoursesAPIView(APIView):
 
     def post(self, request):
         user = request.user
-        course_id = request.data.get("course")
+        course_id = request.data.get("course_id")
         if not user or not course_id:
             return Response({"error": "Bad data."}, status=status.HTTP_400_BAD_REQUEST)
         db_course = Courses.objects.filter(id=course_id).first()

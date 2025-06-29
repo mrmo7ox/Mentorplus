@@ -11,14 +11,14 @@ const StudentCoursesView = () => {
     const [user, setUser] = useState(null);
     const [userLoading, setUserLoading] = useState(true);
     const [categories, setCategories] = useState([]);
+    const [subscribing, setSubscribing] = useState({}); // Track which course is being subscribed to
 
     useEffect(() => {
         const fetchCourses = async () => {
             try {
                 const token = localStorage.getItem("access");
 
-                // Fetch enrolled courses for the student
-                const enrolledResponse = await fetch("http://localhost:8000/api/me/studient/courses", {
+                const enrolledResponse = await fetch("http://localhost:8000/api/studient/courses", {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -27,7 +27,6 @@ const StudentCoursesView = () => {
                 });
                 const enrolledData = enrolledResponse.ok ? await enrolledResponse.json() : [];
 
-                // Fetch all available courses
                 const availableResponse = await fetch("http://localhost:8000/api/getcourses", {
                     method: "GET",
                     headers: {
@@ -85,6 +84,24 @@ const StudentCoursesView = () => {
         }
     }, [user]);
 
+    const subscribe = async (courseId) => {
+        setSubscribing(prev => ({ ...prev, [courseId]: true }));
+        try {
+            const token = localStorage.getItem("access");
+            await fetch("http://localhost:8000/api/studient/courses", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ course_id: courseId }),
+            });
+        } catch (err) {
+            console.log(err)
+        }
+        setSubscribing(prev => ({ ...prev, [courseId]: false }));
+    };
+
     if (isLoading || userLoading) return <div>Loading...</div>;
 
     return (
@@ -117,8 +134,12 @@ const StudentCoursesView = () => {
                                 <h3 className="font-bold text-xl mb-2 text-white">{course.name || course.title}</h3>
                                 <p className="text-sm" style={{ color: fxMutedText }}>{course.description || course.desc}</p>
                             </div>
-                            <button className="w-full mt-6 font-mono text-sm font-semibold py-2 px-4 rounded-full transition-colors bg-green-500 text-black hover:bg-green-600">
-                                Apply Now
+                            <button
+                                onClick={() => subscribe(course.id)}
+                                disabled={!!subscribing[course.id]}
+                                className={`w-full mt-6 font-mono text-sm font-semibold py-2 px-4 rounded-full transition-colors bg-green-500 text-black hover:bg-green-600 ${subscribing[course.id] ? "opacity-50 cursor-not-allowed" : ""}`}
+                            >
+                                {subscribing[course.id] ? "Applying..." : "Apply Now"}
                             </button>
                         </div>
                     ))}
