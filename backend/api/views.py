@@ -294,3 +294,61 @@ class MentorApplicationActionAPIView(APIView):
         application.status = 'accepted' if action == 'approve' else 'rejected'
         application.save()
         return Response({'success': f'Application {action}d.'}, status=status.HTTP_200_OK)
+
+class EditCourseAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        course_id = request.data.get("course_id")
+        name = request.data.get("name")
+        description = request.data.get("description")
+        duration = request.data.get("duration")
+        category_id = request.data.get("category")
+        if not course_id:
+            return Response({"error": "Course ID required."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            course = Courses.objects.get(id=course_id, creator=request.user)
+        except Courses.DoesNotExist:
+            return Response({"error": "Course not found or not authorized."}, status=status.HTTP_404_NOT_FOUND)
+        if name:
+            course.name = name
+        if description:
+            course.description = description
+        if duration:
+            course.duration = duration
+        if category_id:
+            try:
+                category = Category.objects.get(id=category_id)
+                course.category = category
+            except Category.DoesNotExist:
+                return Response({"error": "Category not found."}, status=status.HTTP_400_BAD_REQUEST)
+        course.save()
+        return Response({"success": "Course updated."}, status=status.HTTP_200_OK)
+
+class DeleteCourseAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        course_id = request.data.get("course_id")
+        if not course_id:
+            return Response({"error": "Course ID required."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            course = Courses.objects.get(id=course_id, creator=request.user)
+        except Courses.DoesNotExist:
+            return Response({"error": "Course not found or not authorized."}, status=status.HTTP_404_NOT_FOUND)
+        course.delete()
+        return Response({"success": "Course deleted."}, status=status.HTTP_200_OK)
+
+class CancelApplicationAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        app_id = request.data.get('app_id')
+        if not app_id:
+            return Response({'error': 'Application ID required.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            application = Application.objects.get(id=app_id, user=request.user, status='pending')
+        except Application.DoesNotExist:
+            return Response({'error': 'Pending application not found or not authorized.'}, status=status.HTTP_404_NOT_FOUND)
+        application.delete()
+        return Response({'success': 'Application cancelled.'}, status=status.HTTP_200_OK)

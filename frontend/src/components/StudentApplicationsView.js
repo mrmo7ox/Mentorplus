@@ -28,7 +28,29 @@ const StudentApplicationsView = () => {
         fetchApplications();
     }, []);
 
-    const statusColor = { 'Pending': 'text-yellow-400' };
+    const handleCancel = async (appId) => {
+        try {
+            const token = localStorage.getItem("access");
+            const response = await fetch("http://localhost:8000/api/student/cancel-application/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ app_id: appId })
+            });
+            if (!response.ok) throw new Error("Failed to cancel application");
+            setApplications(prev => prev.filter(app => app.id !== appId));
+        } catch (err) {
+            alert("Could not cancel application.");
+        }
+    };
+
+    const statusColor = {
+        'pending': 'text-yellow-400',
+        'accepted': 'text-green-400',
+        'rejected': 'text-red-500',
+    };
 
     if (isLoading) return <div>Loading applications...</div>;
 
@@ -42,7 +64,12 @@ const StudentApplicationsView = () => {
                             <h3 className="font-bold text-xl text-white">{app.title}</h3>
                             <p className="text-sm" style={{ color: fxMutedText }}>Applied on: {app.date}</p>
                         </div>
-                        <div className={`mt-4 sm:mt-0 font-bold text-lg ${statusColor[app.status]}`}>{app.status}</div>
+                        <div className="flex flex-col items-end gap-2 mt-4 sm:mt-0">
+                            <div className={`font-bold text-lg ${statusColor[app.status?.toLowerCase()]}`}>{app.status}</div>
+                            {app.status?.toLowerCase() === 'pending' && (
+                                <button onClick={() => handleCancel(app.id)} className="mt-2 font-mono text-xs font-semibold py-1 px-4 rounded-full transition-colors bg-red-500 text-black hover:bg-red-600">Cancel</button>
+                            )}
+                        </div>
                     </div>
                 ))}
             </div>

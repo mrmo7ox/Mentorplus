@@ -24,5 +24,8 @@ urlpatterns = [
     path('student/applications/', StudentApplicationsAPIView.as_view(), name='student-applications'),
     path('mentor/applications/', MentorCourseApplicationsAPIView.as_view(), name='mentor-applications'),
     path('mentor/applications/action/', MentorApplicationActionAPIView.as_view(), name='mentor-application-action'),
+    path('mentor/edit-course/', EditCourseAPIView.as_view(), name='edit-course'),
+    path('mentor/delete-course/', DeleteCourseAPIView.as_view(), name='delete-course'),
+    path('student/cancel-application/', CancelApplicationAPIView.as_view(), name='student-cancel-application'),
 
 ]

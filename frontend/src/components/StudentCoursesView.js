@@ -13,37 +13,38 @@ const StudentCoursesView = () => {
     const [categories, setCategories] = useState([]);
     const [subscribing, setSubscribing] = useState({}); // Track which course is being subscribed to
 
+    const fetchCourses = async () => {
+        try {
+            const token = localStorage.getItem("access");
+
+            const enrolledResponse = await fetch("http://localhost:8000/api/studient/courses", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+            const enrolledData = enrolledResponse.ok ? await enrolledResponse.json() : [];
+
+            const availableResponse = await fetch("http://localhost:8000/api/getcourses", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+            const availableData = availableResponse.ok ? await availableResponse.json() : [];
+
+            setEnrolledCourses(enrolledData);
+            setAvailableCourses(availableData);
+        } catch (err) {
+            setEnrolledCourses([]);
+            setAvailableCourses([]);
+        }
+        setIsLoading(false);
+    };
+
     useEffect(() => {
-        const fetchCourses = async () => {
-            try {
-                const token = localStorage.getItem("access");
-
-                const enrolledResponse = await fetch("http://localhost:8000/api/studient/courses", {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    }
-                });
-                const enrolledData = enrolledResponse.ok ? await enrolledResponse.json() : [];
-
-                const availableResponse = await fetch("http://localhost:8000/api/getcourses", {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    }
-                });
-                const availableData = availableResponse.ok ? await availableResponse.json() : [];
-
-                setEnrolledCourses(enrolledData);
-                setAvailableCourses(availableData);
-            } catch (err) {
-                setEnrolledCourses([]);
-                setAvailableCourses([]);
-            }
-            setIsLoading(false);
-        };
         fetchCourses();
     }, []);
 
@@ -96,6 +97,8 @@ const StudentCoursesView = () => {
                 },
                 body: JSON.stringify({ course_id: courseId }),
             });
+            // Refresh courses after applying
+            await fetchCourses();
         } catch (err) {
             console.log(err)
         }
