@@ -113,13 +113,14 @@ class AddcourseAPIView(APIView):
     def post(self, request):
         name = request.data.get("name")
         description = request.data.get("description")
+        duration = request.data.get("duration")
         category_id = request.data.get("category")
-        print(description, name ,category_id)
+        print(description, name, duration, category_id)
         if request.user.groups.first().id != 2:
             return Response({"error": "You are not authorized to add a course."}, status=status.HTTP_403_FORBIDDEN)
 
-        if not name or not category_id or not description:
-            return Response({"error": "Name and category are required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not name or not category_id or not description or not duration:
+            return Response({"error": "Name, description, duration, and category are required."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             category = Category.objects.get(id=category_id)
@@ -129,6 +130,7 @@ class AddcourseAPIView(APIView):
         course = Courses.objects.create(
             name=name,
             description=description,
+            duration=duration,
             category=category,
             creator=request.user
         )
@@ -136,6 +138,7 @@ class AddcourseAPIView(APIView):
             "id": course.id,
             "name": course.name,
             "description": course.description,
+            "duration": course.duration,
             "category": {
                 "id": category.id,
                 "name": category.name
@@ -146,14 +149,28 @@ class AddcourseAPIView(APIView):
 class GetMentorCoursesAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
+        print(request)
         mentor_courses = Courses.objects.filter(creator=request.user)
-        return Response(mentor_courses, status=200)
+        data = []
+        for course in mentor_courses:
+            data.append({
+                "id": course.id,
+                "name": course.name,
+                "description": course.description,
+                "duration": course.duration,
+                "category": {
+                    "id": course.category.id,
+                    "name": course.category.name
+                } if course.category else None,
+            })
+        return Response(data, status=200)
     
 class SubCoursesAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        applications = Application.objects.filter(user=request.user)
+        # Only return courses where the user's application is not pending
+        applications = Application.objects.filter(user=request.user).exclude(status="pending")
         if not applications.exists():
             return Response({"error": "No courses found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -191,7 +208,10 @@ class SubCoursesAPIView(APIView):
 class GetCoursesAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        mentor_courses = Courses.objects.all()
+        # Exclude courses where the user has any application
+        user = request.user
+        applied_course_ids = Application.objects.filter(user=user).values_list('course_id', flat=True)
+        mentor_courses = Courses.objects.exclude(id__in=applied_course_ids)
         if not mentor_courses.exists():
             return Response({"error": "courses not found."}, status=status.HTTP_404_NOT_FOUND)
 
