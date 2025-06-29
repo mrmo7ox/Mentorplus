@@ -52,10 +52,39 @@ const ForgotPasswordForm = ({ setView }) => {
 
     const handlePasswordReset = async (e) => {
         e.preventDefault();
+        setError('');
         setIsLoading(true);
-        // Call API to reset password with token
-        setIsLoading(false);
-        setView('login');
+
+        // Basic validation
+        if (!token) {
+            setError("Le token est requis.");
+            setIsLoading(false);
+            return;
+        }
+        if (!password) {
+            setError("Le nouveau mot de passe est requis.");
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/password_reset/confirm/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, password }),
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                setError(data.detail || "Erreur lors de la réinitialisation du mot de passe.");
+            } else {
+                setInfo("Mot de passe réinitialisé avec succès. Vous pouvez maintenant vous connecter.");
+                setTimeout(() => setView('login'), 1500);
+            }
+        } catch (err) {
+            setError("Erreur réseau. Veuillez réessayer.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     if (step === 'email') {
