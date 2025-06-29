@@ -1,60 +1,48 @@
 import React, { useState, useEffect } from "react";
-import {me} from '../utils/authutils'
+import { me } from '../utils/authutils';
+
 const fxSecondaryBg = '#1A1A1A';
 const fxMutedText = '#DFDFDC';
 
-
 const StudentCoursesView = () => {
-    const [enrolledCourses, setCreatedCourses] = useState([]);
-    const [availableCourses, setSubCoureses] = useState([]);
+    const [enrolledCourses, setEnrolledCourses] = useState([]);
+    const [availableCourses, setAvailableCourses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState(null);
     const [userLoading, setUserLoading] = useState(true);
-
-    // Add Course Form State
     const [categories, setCategories] = useState([]);
-    const [addCourseForm, setAddCourseForm] = useState({ name: "", category: "" });
-    const [addCourseError, setAddCourseError] = useState("");
-    const [addCourseSuccess, setAddCourseSuccess] = useState("");
 
     useEffect(() => {
-        const fetchCourses = () => {
-            const fetchsubcourses = async () => {
+        const fetchCourses = async () => {
             try {
-                    const token = localStorage.getItem("access");
-                    const response = await fetch("http://localhost:8000/api/me/studient/courses", {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${token}`
-                        }
-                    });
-                    if (!response.ok) throw new Error("Error");
-                    const data = await response.json();
-                    setSubCoureses(data);
-                } catch (err) {
-                }
-            };
-            const fetchMentorCourses = async () => {
-            try {
-                    const token = localStorage.getItem("access");
-                    const response = await fetch("http://localhost:8000/api/me/mentor/courses", {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${token}`
-                        }
-                    });
-                    if (!response.ok) throw new Error("Error");
-                    const data = await response.json();
-                    setCreatedCourses(data);
-                } catch (err) {
-                    console.log("")
-                }
-            };
+                const token = localStorage.getItem("access");
 
-            fetchMentorCourses();
-            fetchsubcourses();
+                // Fetch enrolled courses for the student
+                const enrolledResponse = await fetch("http://localhost:8000/api/me/studient/courses", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+                const enrolledData = enrolledResponse.ok ? await enrolledResponse.json() : [];
+
+                // Fetch all available courses
+                const availableResponse = await fetch("http://localhost:8000/api/getcourses", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+                const availableData = availableResponse.ok ? await availableResponse.json() : [];
+
+                setEnrolledCourses(enrolledData);
+                setAvailableCourses(availableData);
+            } catch (err) {
+                setEnrolledCourses([]);
+                setAvailableCourses([]);
+            }
             setIsLoading(false);
         };
         fetchCourses();
@@ -97,87 +85,10 @@ const StudentCoursesView = () => {
         }
     }, [user]);
 
-    const handleAddCourseChange = (e) => {
-        const { name, value } = e.target;
-        setAddCourseForm(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleAddCourseSubmit = async (e) => {
-        e.preventDefault();
-        setAddCourseError("");
-        setAddCourseSuccess("");
-        if (!addCourseForm.name || !addCourseForm.description || !addCourseForm.category) {
-            setAddCourseError("Name and category are required.");
-            return;
-        }
-        try {
-            const token = localStorage.getItem("access");
-            const response = await fetch("http://localhost:8000/api/add-course/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    name: addCourseForm.name,
-                    description: addCourseForm.description,
-                    category: addCourseForm.category,
-                }),
-            });
-            const data = await response.json();
-            if (!response.ok) {
-                setAddCourseError(data.error || "Error adding course.");
-            } else {
-                setAddCourseSuccess("Course added successfully!");
-                setAddCourseForm({ name: "", category: "" });
-            }
-        } catch (err) {
-            setAddCourseError("Network error.");
-        }
-    };
-
     if (isLoading || userLoading) return <div>Loading...</div>;
 
     return (
         <div className="space-y-12">
-            {user?.grp === 2 && (
-                <div className="mb-10 p-6 rounded-xl border" style={{ backgroundColor: fxSecondaryBg, borderColor: '#2d2d2d' }}>
-                    <h2 className="text-2xl font-bold mb-4 text-white">Add a Course</h2>
-                    <form className="space-y-4" onSubmit={handleAddCourseSubmit}>
-                        <input
-                            className="w-full p-2 rounded"
-                            placeholder="Course Title"
-                            name="name"
-                            value={addCourseForm.name}
-                            onChange={handleAddCourseChange}
-                        />
-                        <input
-                            className="w-full p-2 rounded"
-                            placeholder="Description ..."
-                            name="description"
-                            value={addCourseForm.description}
-                            onChange={handleAddCourseChange}
-                        />
-                        <select
-                            className="w-full p-2 rounded "
-                            name="category"
-                            value={addCourseForm.category}
-                            onChange={handleAddCourseChange}
-                        >
-                            <option className="bg-[#242424] " value="">Select Category</option>
-                            {categories.map(cat => (
-                                <option className="bg-[#242424] focus:bg-[#242424]  hover:bg-[#242424] " key={cat.id} value={cat.id}>{cat.name}</option>
-                            ))}
-                        </select>
-                        {addCourseError && <div className="text-red-500">{addCourseError}</div>}
-                        {addCourseSuccess && <div className="text-green-500">{addCourseSuccess}</div>}
-                        <button type="submit" className="bg-green-500 text-black px-4 py-2 rounded-full hover:bg-green-600 font-semibold">
-                            Add Course
-                        </button>
-                    </form>
-                </div>
-            )}
-
             <div>
                 <h2 className="text-3xl font-bold mb-8">My Courses</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
@@ -187,8 +98,8 @@ const StudentCoursesView = () => {
                                 <div className="flex justify-end items-center mb-4">
                                     <span className="text-xs" style={{ color: fxMutedText }}>{course.duration}</span>
                                 </div>
-                                <h3 className="font-bold text-xl mb-2 text-white">{course.title}</h3>
-                                <p className="text-sm" style={{ color: fxMutedText }}>{course.desc}</p>
+                                <h3 className="font-bold text-xl mb-2 text-white">{course.name || course.title}</h3>
+                                <p className="text-sm" style={{ color: fxMutedText }}>{course.description || course.desc}</p>
                             </div>
                         </div>
                     ))}
@@ -203,8 +114,8 @@ const StudentCoursesView = () => {
                                 <div className="flex justify-end items-center mb-4">
                                     <span className="text-xs" style={{ color: fxMutedText }}>{course.duration}</span>
                                 </div>
-                                <h3 className="font-bold text-xl mb-2 text-white">{course.title}</h3>
-                                <p className="text-sm" style={{ color: fxMutedText }}>{course.desc}</p>
+                                <h3 className="font-bold text-xl mb-2 text-white">{course.name || course.title}</h3>
+                                <p className="text-sm" style={{ color: fxMutedText }}>{course.description || course.desc}</p>
                             </div>
                             <button className="w-full mt-6 font-mono text-sm font-semibold py-2 px-4 rounded-full transition-colors bg-green-500 text-black hover:bg-green-600">
                                 Apply Now

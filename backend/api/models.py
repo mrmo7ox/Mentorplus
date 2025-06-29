@@ -43,6 +43,7 @@ class Category(models.Model):
 class Courses(models.Model):
     name = models.CharField(max_length=255, null=True )
     description = models.TextField()
+    duration = models.CharField(max_length=3, null=True )
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='courses')
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="created_courses")
     def __str__(self):

@@ -148,7 +148,28 @@ class GetMentorCoursesAPIView(APIView):
     def get(self, request):
         mentor_courses = Courses.objects.filter(creator=request.user)
         return Response(mentor_courses, status=200)
+    
+class GetCoursesAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        mentor_courses = Courses.objects.all()
+        if not mentor_courses.exists():
+            return Response({"error": "courses not found."}, status=status.HTTP_404_NOT_FOUND)
 
+        courses_data = []
+        for course in mentor_courses:
+            courses_data.append({
+                "id": course.id,
+                "name": course.name,
+                "duration": course.duration,
+                "description": course.description,
+                "category": {
+                    "id": course.category.id,
+                    "name": course.category.name
+                } if course.category else None,
+            })
+
+        return Response(courses_data, status=status.HTTP_200_OK)
 
 class CategoryListAPIView(APIView):
     permission_classes = [IsAuthenticated]
