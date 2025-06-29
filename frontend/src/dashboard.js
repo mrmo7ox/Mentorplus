@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ParticleBackground from './components/ParticleBackground';
-import { isTokenValid, logoutAndRedirect, me} from './utils/authutils.js';
+import { isTokenValid, logoutAndRedirect, user_role} from './utils/authutils.js';
 import StudentCoursesView from './components/StudentCoursesView';
 import StudentApplicationsView from './components/StudentApplicationsView';
 import StudentCertificationsView from './components/StudentCertificationsView';
@@ -28,8 +28,8 @@ const fxLightText = '#F3F3F3';
 
 const UserIcon = ProfileIcon;
 
-
-const Dashboard = ({ userRole = 'student' }) => {
+const userroole = await user_role() ;
+const Dashboard = ({ userRole = userroole}) => {
     const [activeTab, setActiveTab] = useState('My Courses');
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
     const navigate = useNavigate();
@@ -54,8 +54,7 @@ const Dashboard = ({ userRole = 'student' }) => {
         { name: 'Profile', icon: ProfileIcon },
     ];
 
-    const tabs = userRole === 'student' ? studentTabs : mentorTabs;
-
+    const tabs = userRole === 1 ? studentTabs : mentorTabs;
     useEffect(() => {
         if (!tabs.find(t => t.name === activeTab)) {
             setActiveTab(tabs[0].name);
@@ -63,7 +62,7 @@ const Dashboard = ({ userRole = 'student' }) => {
     }, [userRole, tabs, activeTab]);
 
     const renderContent = () => {
-        if (userRole === 'student') {
+        if (userRole === 1) {
             switch (activeTab) {
                 case 'Courses': return <StudentCoursesView />;
                 case 'My Applications': return <StudentApplicationsView />;
@@ -71,7 +70,7 @@ const Dashboard = ({ userRole = 'student' }) => {
                 case 'Profile': return <ProfileView />;
                 default: return <StudentCoursesView />;
             }
-        } else { // Mentor Views
+        } else { 
             switch (activeTab) {
                 case 'My Courses': return <MentorCoursesView />;
                 case 'My Students': return <MentorStudentsView />;

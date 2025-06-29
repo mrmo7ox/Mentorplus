@@ -5,8 +5,8 @@ const fxMutedText = '#DFDFDC';
 
 
 const StudentCoursesView = () => {
-    const [enrolledCourses, setEnrolledCourses] = useState([]);
-    const [availableCourses, setAvailableCourses] = useState([]);
+    const [enrolledCourses, setCreatedCourses] = useState([]);
+    const [availableCourses, setSubCoureses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState(null);
     const [userLoading, setUserLoading] = useState(true);
@@ -19,19 +19,43 @@ const StudentCoursesView = () => {
 
     useEffect(() => {
         const fetchCourses = () => {
-            const enrolledData = [
-                { title: 'Introduction au Trading Algorithmique', desc: 'Apprenez les fondamentaux de la création et du backtesting de stratégies de trading automatisées.', duration: '8 Semaines' },
-                { title: 'Analyse Quantitative Avancée', desc: 'Plongez au cœur de l\'arbitrage statistique, des modèles de machine learning et du trading haute fréquence.', duration: '12 Semaines' },
-            ];
-            const availableData = [
-                { title: 'Dynamique du Marché Forex', desc: 'Maîtrisez les subtilités du marché des changes avec des informations professionnelles.', duration: '10 Semaines' },
-                { title: 'Stratégies Crypto & DeFi', desc: 'Explorez le monde de la finance décentralisée et construisez des bots de trading pour les actifs crypto.', duration: '12 Semaines' },
-            ];
-            setTimeout(() => {
-                setEnrolledCourses(enrolledData);
-                setAvailableCourses(availableData);
-                setIsLoading(false);
-            }, 1000);
+            const fetchsubcourses = async () => {
+            try {
+                    const token = localStorage.getItem("access");
+                    const response = await fetch("http://localhost:8000/api/me/studient/courses", {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        }
+                    });
+                    if (!response.ok) throw new Error("Error");
+                    const data = await response.json();
+                    setSubCoureses(data);
+                } catch (err) {
+                }
+            };
+            const fetchMentorCourses = async () => {
+            try {
+                    const token = localStorage.getItem("access");
+                    const response = await fetch("http://localhost:8000/api/me/mentor/courses", {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        }
+                    });
+                    if (!response.ok) throw new Error("Error");
+                    const data = await response.json();
+                    setCreatedCourses(data);
+                } catch (err) {
+                    console.log("")
+                }
+            };
+
+            fetchMentorCourses();
+            fetchsubcourses();
+            setIsLoading(false);
         };
         fetchCourses();
     }, []);
@@ -82,7 +106,7 @@ const StudentCoursesView = () => {
         e.preventDefault();
         setAddCourseError("");
         setAddCourseSuccess("");
-        if (!addCourseForm.name || !addCourseForm.category) {
+        if (!addCourseForm.name || !addCourseForm.description || !addCourseForm.category) {
             setAddCourseError("Name and category are required.");
             return;
         }
@@ -96,6 +120,7 @@ const StudentCoursesView = () => {
                 },
                 body: JSON.stringify({
                     name: addCourseForm.name,
+                    description: addCourseForm.description,
                     category: addCourseForm.category,
                 }),
             });
@@ -124,6 +149,13 @@ const StudentCoursesView = () => {
                             placeholder="Course Title"
                             name="name"
                             value={addCourseForm.name}
+                            onChange={handleAddCourseChange}
+                        />
+                        <input
+                            className="w-full p-2 rounded"
+                            placeholder="Description ..."
+                            name="description"
+                            value={addCourseForm.description}
                             onChange={handleAddCourseChange}
                         />
                         <select

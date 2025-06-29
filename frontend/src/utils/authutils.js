@@ -25,6 +25,22 @@ export async function me() {
     .catch(console.error);
 }
 
+export async function user_role() {
+    const token = localStorage.getItem("access");
+    try {
+        const res = await fetch("http://127.0.0.1:8000/api/me/", {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+        const data = await res.json();
+        return data.grp;
+    } catch (e) {
+        console.error(e);
+        return null;
+    }
+}
+
 
 
 export function logoutAndRedirect(navigate) {

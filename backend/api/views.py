@@ -112,11 +112,13 @@ class AddcourseAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         name = request.data.get("name")
+        description = request.data.get("description")
         category_id = request.data.get("category")
+        print(description, name ,category_id)
         if request.user.groups.first().id != 2:
             return Response({"error": "You are not authorized to add a course."}, status=status.HTTP_403_FORBIDDEN)
 
-        if not name or not category_id:
+        if not name or not category_id or not description:
             return Response({"error": "Name and category are required."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -126,11 +128,14 @@ class AddcourseAPIView(APIView):
 
         course = Courses.objects.create(
             name=name,
+            description=description,
             category=category,
+            creator=request.user
         )
         course_data = {
             "id": course.id,
             "name": course.name,
+            "description": course.description,
             "category": {
                 "id": category.id,
                 "name": category.name
@@ -138,6 +143,12 @@ class AddcourseAPIView(APIView):
         }
         return Response(course_data, status=status.HTTP_201_CREATED)
     
+class GetMentorCoursesAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        mentor_courses = Courses.objects.filter(creator=request.user)
+        return Response(mentor_courses, status=200)
+
 
 class CategoryListAPIView(APIView):
     permission_classes = [IsAuthenticated]
