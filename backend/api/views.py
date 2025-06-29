@@ -186,6 +186,11 @@ class SubCoursesAPIView(APIView):
                     "id": course.category.id,
                     "name": course.category.name
                 } if course.category else None,
+                "creator": {
+                    "first_name": course.creator.first_name if course.creator else None,
+                    "last_name": course.creator.last_name if course.creator else None,
+                    "email": course.creator.email if course.creator else None
+                } if hasattr(course, 'creator') and course.creator else None,
             })
         return Response(courses_data, status=status.HTTP_200_OK)
 
@@ -226,6 +231,11 @@ class GetCoursesAPIView(APIView):
                     "id": course.category.id,
                     "name": course.category.name
                 } if course.category else None,
+                "creator": {
+                    "first_name": course.creator.first_name if course.creator else None,
+                    "last_name": course.creator.last_name if course.creator else None,
+                    "email": course.creator.email if course.creator else None
+                } if hasattr(course, 'creator') and course.creator else None,
             })
 
         return Response(courses_data, status=status.HTTP_200_OK)
@@ -250,3 +260,37 @@ class StudentApplicationsAPIView(APIView):
                 "date": app.created_at.strftime('%Y-%m-%d'),
             })
         return Response(data)
+
+class MentorCourseApplicationsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        # Get all applications for courses created by this mentor with pending status
+        mentor_courses = Courses.objects.filter(creator=request.user)
+        applications = Application.objects.filter(course__in=mentor_courses, status="pending").select_related('course', 'user')
+        data = []
+        for app in applications:
+            data.append({
+                "id": app.id,
+                "course": app.course.name,
+                "student_email": app.user.email,
+                "student_first_name": app.user.first_name,
+                "student_last_name": app.user.last_name,
+                "status": app.status,
+                "date": app.created_at.strftime('%Y-%m-%d'),
+            })
+        return Response(data)
+
+class MentorApplicationActionAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        app_id = request.data.get('app_id')
+        action = request.data.get('action')  # 'approve' or 'reject'
+        if action not in ['approve', 'reject']:
+            return Response({'error': 'Invalid action.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            application = Application.objects.get(id=app_id, course__creator=request.user)
+        except Application.DoesNotExist:
+            return Response({'error': 'Application not found or not authorized.'}, status=status.HTTP_404_NOT_FOUND)
+        application.status = 'accepted' if action == 'approve' else 'rejected'
+        application.save()
+        return Response({'success': f'Application {action}d.'}, status=status.HTTP_200_OK)

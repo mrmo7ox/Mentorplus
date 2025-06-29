@@ -112,8 +112,11 @@ const StudentCoursesView = () => {
                     {enrolledCourses.map((course, index) => (
                         <div key={index} className="flex flex-col text-left rounded-xl p-6 border transition-all duration-300 hover:border-green-500 hover:shadow-2xl hover:shadow-green-500/10" style={{ backgroundColor: fxSecondaryBg, borderColor: '#2d2d2d' }}>
                             <div className="flex-grow">
-                                <div className="flex justify-end items-center mb-4">
-                                    <span className="text-xs" style={{ color: fxMutedText }}>{course.duration}</span>
+                                <div className="flex justify-between items-center mb-4">
+                                    <span className="text-xs" style={{ color: fxMutedText }}>{course.duration} weeks</span>
+                                    {course.creator && (
+                                        <span className="text-xs" style={{ color: fxMutedText }}>{course.creator.first_name} {course.creator.last_name}</span>
+                                    )}
                                 </div>
                                 <h3 className="font-bold text-xl mb-2 text-white">{course.name || course.title}</h3>
                                 <p className="text-sm" style={{ color: fxMutedText }}>{course.description || course.desc}</p>
@@ -128,8 +131,11 @@ const StudentCoursesView = () => {
                     {availableCourses.map((course, index) => (
                         <div key={index} className="flex flex-col text-left rounded-xl p-6 border transition-all duration-300 hover:border-green-500 hover:shadow-2xl hover:shadow-green-500/10" style={{ backgroundColor: fxSecondaryBg, borderColor: '#2d2d2d' }}>
                             <div className="flex-grow">
-                                <div className="flex justify-end items-center mb-4">
-                                    <span className="text-xs" style={{ color: fxMutedText }}>{course.duration}</span>
+                                <div className="flex justify-between items-center mb-4">
+                                    <span className="text-xs" style={{ color: fxMutedText }}>{course.duration} weeks</span>
+                                    {course.creator && (
+                                        <span className="text-xs" style={{ color: fxMutedText }}>{course.creator.first_name} {course.creator.last_name}</span>
+                                    )}
                                 </div>
                                 <h3 className="font-bold text-xl mb-2 text-white">{course.name || course.title}</h3>
                                 <p className="text-sm" style={{ color: fxMutedText }}>{course.description || course.desc}</p>
