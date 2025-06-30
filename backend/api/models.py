@@ -57,3 +57,12 @@ class Application(models.Model):
     
     def str(self):
         return f"{self.user.email} -> {self.course.name} ({self.status})"
+
+class Certificate(models.Model):
+    onchain_id = models.PositiveIntegerField(unique=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='certificates')
+    course = models.ForeignKey('Courses', on_delete=models.CASCADE, related_name='certificates')
+    issued_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Certificate {self.onchain_id} for {self.user.email} - {self.course.name}"

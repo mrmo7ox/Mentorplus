@@ -28,5 +28,7 @@ urlpatterns = [
     path('mentor/delete-course/', DeleteCourseAPIView.as_view(), name='delete-course'),
     path('student/cancel-application/', CancelApplicationAPIView.as_view(), name='student-cancel-application'),
     path('mentor/students/', MentorStudentsAPIView.as_view(), name='mentor-students'),
+    path('mentor/issue-certificate/', IssueCertificateAPIView.as_view(), name='issue-certificate'),
+    path('student/certificates/', StudentCertificatesAPIView.as_view(), name='student-certificates'),
 
 ]

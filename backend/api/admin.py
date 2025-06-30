@@ -28,3 +28,7 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(Courses)
 class CourseAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'category')
+
+@admin.register(Certificate)
+class CertificateAdmin(admin.ModelAdmin):
+    list_display = ('onchain_id', 'user', 'course' , 'issued_at')

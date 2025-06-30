@@ -6,7 +6,7 @@ import LoginPage from './loginpage';
 import HomePage from './homepage';
 import RegisterPage from './register';
 import Dashboard from './dashboard';
-// import CertificatePage from './cert';
+import CertificatePage from './components/Certs';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <Router>
@@ -16,7 +16,7 @@ root.render(
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        {/* <Route path="/cert" element={<CertificatePage />} /> */}
+        <Route path="/cert" element={<CertificatePage />} />
 
       </Routes>
     </Router>

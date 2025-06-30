@@ -8,7 +8,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.core.mail import send_mail
+from blockchain.blockchain import deployed_ledger, w3 
+
+
 from .models import *
+
 
 class MeUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -73,7 +77,6 @@ class LoginAPIView(APIView):
     def post(self, request):
         email = request.data.get("email")
         password = request.data.get("password")
-        print(email, password)
         user = authenticate(request, email=email, password=password)
         if user is not None:
             token, created = Token.objects.get_or_create(user=user)
@@ -91,7 +94,6 @@ class RegisterAPIView(APIView):
         if(int(grp) > 2 or int(grp) < 1):
             return Response({"error": "Invalid Group Id"}, status=status.HTTP_400_BAD_REQUEST)
         password = request.data.get("password")
-        print(first_name, last_name, email , grp, password)
         if not all([first_name, last_name, email, grp, password]):
             return Response({"success": "KO"}, status=status.HTTP_400_BAD_REQUEST)
         if User.objects.filter(email=email).exists():
@@ -115,7 +117,6 @@ class AddcourseAPIView(APIView):
         description = request.data.get("description")
         duration = request.data.get("duration")
         category_id = request.data.get("category")
-        print(description, name, duration, category_id)
         if request.user.groups.first().id != 2:
             return Response({"error": "You are not authorized to add a course."}, status=status.HTTP_403_FORBIDDEN)
 
@@ -149,7 +150,6 @@ class AddcourseAPIView(APIView):
 class GetMentorCoursesAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        print(request)
         mentor_courses = Courses.objects.filter(creator=request.user)
         data = []
         for course in mentor_courses:
@@ -371,3 +371,69 @@ class MentorStudentsAPIView(APIView):
                 "course_name": app.course.name,
             })
         return Response(data)
+    
+class IssueCertificateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        student_id = request.data.get("student_id")
+        course_id = request.data.get("course_id")
+        feedback = request.data.get("feedback")
+        if not student_id or not course_id or not feedback:
+            return Response({"error": "Missing data"}, status=400)
+        try:
+            student = User.objects.get(id=student_id)
+            course = Courses.objects.get(id=course_id)
+        except User.DoesNotExist:
+            return Response({"error": "Student not found"}, status=404)
+        except Courses.DoesNotExist:
+            return Response({"error": "Course not found"}, status=404)
+        mentor_name = f"{request.user.first_name} {request.user.last_name}"
+        student_name = f"{student.first_name} {student.last_name}"
+        course_name = course.name
+        try:
+            # Get the current certificateCount before issuing
+            current_cert_count = deployed_ledger.functions.certificateCount().call()
+            tx_hash = deployed_ledger.functions.issueCertificate(
+                student_name, mentor_name, course_name, feedback
+            ).transact()
+            w3.eth.wait_for_transaction_receipt(tx_hash)
+            # The new certificate will have id = current_cert_count + 1
+            cert_id = current_cert_count + 1
+            # Create Certificate record only if it doesn't exist
+            if not Certificate.objects.filter(onchain_id=cert_id, user=student, course=course).exists():
+                Certificate.objects.create(
+                    onchain_id=cert_id,
+                    user=student,
+                    course=course
+                )
+            # Update application status to 'issued'
+            app = Application.objects.filter(user=student, course=course, status="accepted").first()
+            if app:
+                app.status = "issued"
+                app.save()
+            return Response({"success": "Certificate issued!"})
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
+class StudentCertificatesAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        certs = Certificate.objects.filter(user=request.user).select_related('course')
+        result = []
+        for cert in certs:
+            try:
+                onchain = deployed_ledger.functions.getCertificate(cert.onchain_id).call()
+                result.append({
+                    "certificate_id": cert.onchain_id,
+                    "course_name": cert.course.name,
+                    "mentor_name": onchain[1],
+                    "student_name": onchain[0],
+                    "feedback": onchain[3],
+                    "issued_at": cert.issued_at.strftime('%Y-%m-%d'),
+                })
+            except Exception as e:
+                # Optionally skip or include error info
+                continue
+        return Response(result, status=200)

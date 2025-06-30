@@ -11,24 +11,26 @@ const MentorStudentsView = () => {
     const [evalError, setEvalError] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
+    // Extract fetchStudents so it can be reused
+    const fetchStudents = async () => {
+        setIsLoading(true);
+        try {
+            const token = localStorage.getItem("access");
+            const response = await fetch("http://localhost:8000/api/mentor/students/", {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+            if (!response.ok) throw new Error("Failed to fetch students");
+            const data = await response.json();
+            setStudents(data);
+        } catch (err) {
+            setStudents([]);
+        }
+        setIsLoading(false);
+    };
+
     useEffect(() => {
-        const fetchStudents = async () => {
-            setIsLoading(true);
-            try {
-                const token = localStorage.getItem("access");
-                const response = await fetch("http://localhost:8000/api/mentor/students/", {
-                    headers: {
-                        "Authorization": `Bearer ${token}`
-                    }
-                });
-                if (!response.ok) throw new Error("Failed to fetch students");
-                const data = await response.json();
-                setStudents(data);
-            } catch (err) {
-                setStudents([]);
-            }
-            setIsLoading(false);
-        };
         fetchStudents();
     }, []);
 
@@ -62,14 +64,31 @@ const MentorStudentsView = () => {
             return;
         }
         setSubmitting(true);
-        // TODO: Call backend to issue certificate
-        setTimeout(() => {
-            setSubmitting(false);
+        try {
+            const token = localStorage.getItem("access");
+            const response = await fetch("http://localhost:8000/api/mentor/issue-certificate/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    course_id: certStudent.course_id,
+                    student_id: certStudent.student_id,
+                    feedback: evaluation
+                })
+            });
+            if (!response.ok) throw new Error("Failed to issue certificate");
             setCertStudent(null);
             setEvaluation("");
             setEvalError("");
             alert("Certificate issued!");
-        }, 1000);
+            // Refresh students list after issuing certificate
+            fetchStudents();
+        } catch (err) {
+            setEvalError("Could not issue certificate.");
+        }
+        setSubmitting(false);
     };
 
     if (isLoading) return <div>Loading students...</div>;
