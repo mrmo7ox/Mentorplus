@@ -147,7 +147,6 @@ EMAIL_USE_TLS = True
 
 
 EMAIL_HOST_USER = 'insync.webchat@gmail.com'
-EMAIL_HOST_PASSWORD = 'qbut cbrd chqh kbsf'
 DEFAULT_FROM_EMAIL = 'insync.webchat@gmail.com'
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
